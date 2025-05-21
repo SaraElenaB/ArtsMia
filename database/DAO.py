@@ -1,6 +1,6 @@
 from database.DB_connect import DBConnect
 from model.arco import Arco
-from model.artObject import ArtObject
+from model.art_object import ArtObject
 
 
 class DAO():
