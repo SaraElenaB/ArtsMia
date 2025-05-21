@@ -26,4 +26,4 @@ class ArtObject:
         return self.object_id == other.object_id
 
     def __str__(self):
-        return f"{self.title} - {self.dated}"
+        return f"{self.classification}-{self.title} - {self.object_name}"

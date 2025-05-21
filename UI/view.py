@@ -23,7 +23,7 @@ class View(ft.UserControl):
         self._title = ft.Text("The MIA Collection database", color="orange", size=24)
         self._page.controls.append(self._title)
 
-        # controls
+        #row1
         self._btnAnalizzaOggetti = ft.ElevatedButton(text="Analizza oggetti",
                                                      on_click=self._controller.handleAnalizzaOggetti,
                                                      bgcolor="orange",
@@ -37,12 +37,30 @@ class View(ft.UserControl):
                                                   width=200,
                                                   disabled=True)
 
-        self._page.controls.append(ft.Row([self._btnAnalizzaOggetti, self._txtIdOggetto, self._btnCompConnessa],
-                                          alignment=ft.MainAxisAlignment.CENTER))
+        row1= ft.Row( [ ft.Container(self._btnAnalizzaOggetti, width=250),
+                                ft.Container(self._txtIdOggetto, width=250),
+                                ft.Container(self._btnCompConnessa, width=250) ],
+                                alignment=ft.MainAxisAlignment.CENTER )
+
+        #row2
+        self._ddLun= ft.Dropdown( label="Lunghezza LUN",
+                                  border_color="orange",
+                                  disabled=True)
+        self._btnCercaOgg= ft.ElevatedButton( text="Cerca oggetti",
+                                              on_click=self._controller.handleCercaOggetti,
+                                              bgcolor="orange",
+                                              color="white",
+                                              disabled=True)
+
+        row2 = ft.Row( [ ft.Container(None, width=250),
+                                 ft.Container(self._ddLun, width=250),
+                                 ft.Container(self._btnCercaOgg, width=250) ],
+                                alignment=ft.MainAxisAlignment.CENTER )
+
 
         # List View where the reply is printed
         self.txt_result = ft.ListView(expand=1, spacing=10, padding=20, auto_scroll=True)
-        self._page.controls.append(self.txt_result)
+        self._page.add(row1, row2, self.txt_result)
         self._page.update()
 
     @property

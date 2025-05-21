@@ -1,5 +1,8 @@
+import copy
+
 import networkx as nx
 from database.DAO import DAO
+from model.art_object import ArtObject
 
 
 class Model:
@@ -11,11 +14,21 @@ class Model:
         for v in self._nodes:
             self._idMap[v.object_id]=v
 
+        self._bestPath=[]
+        self._bestCost=0
+
+
+    #----------------------------------------------------------------------------------------------------------------------------
     def getIdMap(self):
         return self._idMap
 
+    def getObjectFromId(self, id):
+        return self._idMap[id]
+
+    # ----------------------------------------------------------------------------------------------------------------------------
+
     def buildGraph(self):
-        self._graph.add_nodes_from(self._nodes) #
+        self._graph.add_nodes_from(self._nodes)
         self.addAllEdges2()
         #non devi scrivere self._graph =
 
@@ -25,6 +38,7 @@ class Model:
     def getNumArchi(self):
         return len(self._graph.edges)
 
+    # ----------------------------------------------------------------------------------------------------------------------------
     def addEdges1(self): #se i nodi sono pochi può convenire
         #doppio ciclo
         for u in self._nodes:
@@ -39,6 +53,7 @@ class Model:
         for e in allEdges:
             self._graph.add_edge( e.o1, e.o2, weight=e.peso)
 
+    # ----------------------------------------------------------------------------------------------------------------------------
     def getInfoConnessa(self, idInt):
         #Identifica la componente connessa che contiene idInt e ne restituisce la dimensine
         #tutti i nodi che posso raggiungere da source --> DEPTH FIRST
@@ -72,18 +87,60 @@ class Model:
 
         return len(conn)
 
-    def getObjectFromId(self, id):
-        return self._idMap[id]
-
-
-
-
+    # ----------------------------------------------------------------------------------------------------------------------------
 
     def hasNode(self, idInt):
         # return self._idMap[idInt] in self._graph
         # se hai un dict --> allora controlli se fa parte delle chiavi del dict: idInt in self._idMap
         # se hai un ogg  -->  allora "idInt in self._graph"
         return idInt in self._idMap
+
+    # ----------------------------------------------------------------------------------------------------------------------------
+    def getOptPath(self, source, lun):
+        # ottimizzazione --> si assicura di lavorare su strutture dati vuote
+
+        self._bestPath=[]
+        self._bestCost=0
+        parziale=[source]
+
+        #provo tutti i cammini che aggiungono i vicini
+        for n in self._graph.neighbors(source): #stessa cosa di nx.neighbors(self._graph, sourceOgg):
+            #vincolo --> anche qui che aggiungo il primo nodo
+            if parziale[-1].classification == n.classification:
+                parziale.append(n)
+                self._ricorsione(parziale, lun)
+                parziale.pop()
+
+        return self._bestPath, self._bestCost
+
+
+    def _ricorsione(self, parziale, lun):
+        #condizione terminale
+        if len(parziale) == lun:                          #verifico se è la soluzione migliore ma comunque poi esco
+            if self.costo(parziale) > self._bestCost:
+                self._bestCost= self.costo(parziale)
+                self._bestPath = copy.deepcopy(parziale)
+            return
+
+        #condizione di ricorsione
+        for n in self._graph.neighbors(parziale[-1]):    #devo prendere l'ultimo vicino, non un nodo qualsiasi
+            #vincolo
+            if parziale[-1].classification == n.classification and n not in parziale:
+                parziale.append(n)
+                self._ricorsione(parziale, lun)
+                parziale.pop()
+
+    # ----------------------------------------------------------------------------------------------------------------------------
+    def costo(self, parziale: list): #lista di ArtObject
+
+        totCost = 0
+        #cicla sugli archi, accesso al dict del mio grafo e prendo il peso dell'arco che va da i a i+1
+        for i in range(0, len(parziale)-1): #ciclo sugli archi
+            totCost += self._graph[parziale[i]][parziale[i+1]]["weight"]
+        return totCost
+
+    # ----------------------------------------------------------------------------------------------------------------------------
+
 
 
 
